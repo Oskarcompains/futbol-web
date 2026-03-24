@@ -1,0 +1,43 @@
+<%- include('layout-top', { titulo: 'Productos', activePage: 'productos', admin }) %>
+
+<div class="page-hdr">
+  <h1>Productos</h1>
+  <a href="/admin/productos/nuevo" class="btn btn-rojo">+ Nuevo producto</a>
+</div>
+
+<div class="tabla-wrap">
+  <% if (productos.length > 0) { %>
+  <table class="tabla">
+    <thead>
+      <tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+    </thead>
+    <tbody>
+      <% productos.forEach(p => { %>
+      <tr>
+        <td style="color:var(--texto-s);font-size:0.8rem">#<%= p.id %></td>
+        <td>
+          <strong><%= p.nombre %></strong><br>
+          <span style="font-size:0.8rem;color:var(--texto-s)"><%= p.descripcion ? p.descripcion.substring(0,55)+'...' : '' %></span>
+        </td>
+        <td><span class="badge badge-gris"><%= p.categoria %></span></td>
+        <td style="font-family:var(--font-c);font-weight:700;color:var(--rojo);font-size:1.1rem"><%= p.precio.toFixed(2) %>€</td>
+        <td style="color:<%= p.stock < 10 ? '#f5a623' : 'var(--texto-s)' %>"><%= p.stock %> uds.</td>
+        <td>
+          <div style="display:flex;gap:0.4rem">
+            <a href="/tienda/producto/<%= p.id %>" target="_blank" class="btn btn-outline btn-xs">👁 Ver</a>
+            <a href="/admin/productos/editar/<%= p.id %>" class="btn btn-gris btn-xs">✏️ Editar</a>
+            <form action="/admin/productos/eliminar/<%= p.id %>" method="POST" data-confirm="¿Eliminar '<%= p.nombre %>'?">
+              <button type="submit" class="btn btn-peligro btn-xs">🗑</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } else { %>
+  <div style="padding:2rem;color:var(--texto-s)">No hay productos. <a href="/admin/productos/nuevo" style="color:var(--rojo)">Crea el primero →</a></div>
+  <% } %>
+</div>
+
+<%- include('layout-bottom') %>

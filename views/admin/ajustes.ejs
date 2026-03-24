@@ -1,0 +1,47 @@
+<%- include('layout-top', { titulo: 'Ajustes', activePage: 'ajustes', admin }) %>
+
+<div class="page-hdr">
+  <h1>Ajustes de cuenta</h1>
+</div>
+
+<div style="max-width:480px">
+  <% if (success) { %>
+  <div class="alerta alerta-ok">✅ <%= success %></div>
+  <% } %>
+  <% if (error) { %>
+  <div class="alerta alerta-err">⚠️ <%= error %></div>
+  <% } %>
+
+  <div class="form-card">
+    <div style="margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,0.06)">
+      <div style="font-family:var(--font-c);font-size:0.72rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--texto-s);margin-bottom:0.35rem">Usuario actual</div>
+      <div style="font-size:1.1rem;font-weight:600">👤 <%= admin %></div>
+    </div>
+
+    <h2 style="font-family:var(--font-t);font-size:1.4rem;letter-spacing:0.03em;margin-bottom:1.25rem">Cambiar contraseña</h2>
+
+    <form action="/admin/ajustes/password" method="POST">
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Contraseña actual *</label>
+        <input type="password" name="actual" class="form-input" required placeholder="Tu contraseña actual">
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Nueva contraseña *</label>
+        <input type="password" name="nueva" class="form-input" required placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Confirmar nueva contraseña *</label>
+        <input type="password" name="confirmar" class="form-input" required placeholder="Repite la nueva contraseña">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-rojo">🔒 Actualizar contraseña</button>
+      </div>
+    </form>
+  </div>
+
+  <div style="margin-top:1.5rem;padding:1.25rem;background:rgba(232,19,43,0.06);border:1px solid rgba(232,19,43,0.15);font-size:0.85rem;color:var(--texto-s)">
+    ⚠️ <strong style="color:var(--texto)">Recuerda:</strong> Usa la URL <code style="background:var(--gris-3);padding:0.1rem 0.4rem;font-size:0.8rem">/admin</code> para acceder al panel. No compartas tus credenciales con nadie.
+  </div>
+</div>
+
+<%- include('layout-bottom') %>

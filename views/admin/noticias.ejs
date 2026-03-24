@@ -1,0 +1,41 @@
+<%- include('layout-top', { titulo: 'Noticias', activePage: 'noticias', admin }) %>
+
+<div class="page-hdr">
+  <h1>Noticias</h1>
+  <a href="/admin/noticias/nueva" class="btn btn-rojo">+ Nueva noticia</a>
+</div>
+
+<div class="tabla-wrap">
+  <% if (noticias.length > 0) { %>
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th>ID</th><th>Título</th><th>Categoría</th><th>Fecha</th><th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% noticias.forEach(n => { %>
+      <tr>
+        <td style="color:var(--texto-s);font-size:0.8rem">#<%= n.id %></td>
+        <td><strong><%= n.titulo %></strong><br><span style="font-size:0.82rem;color:var(--texto-s)"><%= n.resumen.substring(0,70) %>...</span></td>
+        <td><span class="badge badge-rojo"><%= n.categoria %></span></td>
+        <td style="font-size:0.85rem;color:var(--texto-s)"><%= new Date(n.fecha).toLocaleDateString('es-ES') %></td>
+        <td>
+          <div style="display:flex;gap:0.4rem">
+            <a href="/blog/<%= n.id %>" target="_blank" class="btn btn-outline btn-xs">👁 Ver</a>
+            <a href="/admin/noticias/editar/<%= n.id %>" class="btn btn-gris btn-xs">✏️ Editar</a>
+            <form action="/admin/noticias/eliminar/<%= n.id %>" method="POST" data-confirm="¿Eliminar esta noticia? Esta acción no se puede deshacer.">
+              <button type="submit" class="btn btn-peligro btn-xs">🗑 Borrar</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } else { %>
+  <div style="padding:2rem;color:var(--texto-s)">No hay noticias. <a href="/admin/noticias/nueva" style="color:var(--rojo)">Crea la primera →</a></div>
+  <% } %>
+</div>
+
+<%- include('layout-bottom') %>

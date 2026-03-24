@@ -1,0 +1,45 @@
+<%- include('partials/header', { titulo: 'Blog', descripcion: 'Noticias y novedades del Club Deportivo.' }) %>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-breadcrumb"><a href="/">Inicio</a> / Blog</div>
+    <h1 class="page-h1">Noticias <span style="color:var(--rojo)">& Blog</span></h1>
+  </div>
+</div>
+
+<div class="seccion">
+  <% if (noticias.length > 0) { %>
+  <div class="noticias-grid" style="grid-template-columns: 1fr 1fr 1fr">
+    <% noticias.forEach(n => { %>
+    <a href="/blog/<%= n.id %>" class="noticia-card">
+      <div class="noticia-img-wrap">
+        <div class="noticia-img">
+          <%= n.categoria === 'Partidos' ? '⚽' : n.categoria === 'Club' ? '🏟️' : '📰' %>
+        </div>
+      </div>
+      <div class="noticia-body">
+        <div class="noticia-cat"><%= n.categoria %></div>
+        <div class="noticia-titulo"><%= n.titulo %></div>
+        <p class="noticia-resumen"><%= n.resumen %></p>
+        <div class="noticia-fecha"><%= new Date(n.fecha).toLocaleDateString('es-ES', {day:'numeric',month:'long',year:'numeric'}) %></div>
+      </div>
+    </a>
+    <% }) %>
+  </div>
+
+  <% if (totalPages > 1) { %>
+  <div class="paginacion">
+    <% if (page > 1) { %><a href="/blog?page=<%= page-1 %>">← Anterior</a><% } %>
+    <% for(let i=1; i<=totalPages; i++) { %>
+      <% if (i === page) { %><span><%= i %></span><% } else { %><a href="/blog?page=<%= i %>"><%= i %></a><% } %>
+    <% } %>
+    <% if (page < totalPages) { %><a href="/blog?page=<%= page+1 %>">Siguiente →</a><% } %>
+  </div>
+  <% } %>
+
+  <% } else { %>
+  <p style="color:var(--gris-claro)">No hay noticias disponibles todavía. ¡Vuelve pronto!</p>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

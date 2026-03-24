@@ -1,0 +1,43 @@
+<%- include('layout-top', { titulo: producto ? 'Editar producto' : 'Nuevo producto', activePage: 'productos', admin }) %>
+
+<div class="page-hdr">
+  <h1><%= producto ? 'Editar producto' : 'Nuevo producto' %></h1>
+  <a href="/admin/productos" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="form-card">
+  <form action="<%= producto ? '/admin/productos/editar/'+producto.id : '/admin/productos/nuevo' %>" method="POST">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label class="form-label">Nombre *</label>
+        <input type="text" name="nombre" class="form-input" required value="<%= producto ? producto.nombre : '' %>" placeholder="Ej: Camiseta Local 2025">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Categoría</label>
+        <select name="categoria" class="form-select">
+          <% ['Camisetas','Ropa','Accesorios','Material','Otros'].forEach(cat => { %>
+          <option value="<%= cat %>" <%= producto && producto.categoria === cat ? 'selected' : '' %>><%= cat %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Precio (€) *</label>
+        <input type="number" name="precio" class="form-input" required min="0" step="0.01" value="<%= producto ? producto.precio : '' %>" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stock</label>
+        <input type="number" name="stock" class="form-input" min="0" value="<%= producto ? producto.stock : 100 %>">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Descripción</label>
+        <textarea name="descripcion" class="form-textarea" placeholder="Descripción del producto..."><%= producto ? producto.descripcion : '' %></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-rojo"><%= producto ? '💾 Guardar cambios' : '+ Crear producto' %></button>
+      <a href="/admin/productos" class="btn btn-outline">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<%- include('layout-bottom') %>

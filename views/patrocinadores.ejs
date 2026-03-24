@@ -1,0 +1,70 @@
+<%- include('partials/header', { titulo: 'Patrocinadores', descripcion: 'Empresas y organizaciones que apoyan al club.' }) %>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-breadcrumb"><a href="/">Inicio</a> / Patrocinadores</div>
+    <h1 class="page-h1">Nuestros <span style="color:var(--rojo)">Partners</span></h1>
+  </div>
+</div>
+
+<div class="seccion">
+  <p style="color:var(--gris-claro);max-width:540px;margin-bottom:4rem;font-size:1.05rem;line-height:1.7">
+    Gracias a la confianza de nuestros patrocinadores podemos seguir creciendo. Si quieres ser parte de la familia, <a href="/contacto" style="color:var(--rojo)">contáctanos</a>.
+  </p>
+
+  <div class="niveles-grid">
+    <% const oro = patrocinadores.filter(p=>p.nivel===3);
+       const plata = patrocinadores.filter(p=>p.nivel===2);
+       const bronce = patrocinadores.filter(p=>p.nivel===1); %>
+
+    <% if (oro.length > 0) { %>
+    <div class="nivel-oro">
+      <div class="nivel-titulo">⭐ Patrocinador Principal</div>
+      <div class="patrocinadores-row">
+        <% oro.forEach(p => { %>
+        <a href="<%= p.web || '#' %>" target="_blank" rel="noopener" class="patrocinador-card" title="<%= p.descripcion || p.nombre %>">
+          <div>
+            <div class="patrocinador-nombre" style="font-size:1.4rem;color:var(--acento)"><%= p.nombre %></div>
+            <% if (p.descripcion) { %><div style="font-size:0.8rem;color:var(--gris-claro);margin-top:0.4rem;font-family:var(--font-body)"><%= p.descripcion %></div><% } %>
+          </div>
+        </a>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+
+    <% if (plata.length > 0) { %>
+    <div>
+      <div class="nivel-titulo">Colaboradores Oficiales</div>
+      <div class="patrocinadores-row">
+        <% plata.forEach(p => { %>
+        <a href="<%= p.web || '#' %>" target="_blank" rel="noopener" class="patrocinador-card" title="<%= p.descripcion || p.nombre %>">
+          <div class="patrocinador-nombre"><%= p.nombre %></div>
+        </a>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+
+    <% if (bronce.length > 0) { %>
+    <div>
+      <div class="nivel-titulo">Amigos del Club</div>
+      <div class="patrocinadores-row">
+        <% bronce.forEach(p => { %>
+        <a href="<%= p.web || '#' %>" target="_blank" rel="noopener" class="patrocinador-card" title="<%= p.descripcion || p.nombre %>">
+          <div class="patrocinador-nombre" style="font-size:0.95rem"><%= p.nombre %></div>
+        </a>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+  </div>
+
+  <div style="margin-top:4rem;padding:3rem;background:var(--gris-oscuro);border:1px solid rgba(232,19,43,0.2);border-radius:2px;text-align:center">
+    <h3 style="font-family:var(--font-titulo);font-size:2.2rem;margin-bottom:0.75rem">¿Quieres Patrocinar Al Club?</h3>
+    <p style="color:var(--gris-claro);margin-bottom:2rem;max-width:480px;margin-left:auto;margin-right:auto">Benefíciate de visibilidad local y apoya el deporte en nuestra comunidad. Tenemos diferentes planes adaptados a tu empresa.</p>
+    <a href="/contacto" class="btn btn-primario">Contáctanos ↗</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,109 @@
+<%- include('layout-top', { titulo: 'Dashboard', activePage: 'dashboard', admin }) %>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-card-icon">📰</div>
+    <div class="stat-card-num"><%= stats.noticias %></div>
+    <div class="stat-card-label">Noticias</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon">⚽</div>
+    <div class="stat-card-num"><%= stats.jugadores %></div>
+    <div class="stat-card-label">Jugadores</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon">🛍️</div>
+    <div class="stat-card-num"><%= stats.productos %></div>
+    <div class="stat-card-label">Productos</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon">🤝</div>
+    <div class="stat-card-num"><%= stats.patrocinadores %></div>
+    <div class="stat-card-label">Patrocinadores</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon">✉️</div>
+    <div class="stat-card-num" style="<%= stats.mensajes > 0 ? 'color:var(--amarillo)' : '' %>"><%= stats.mensajes %></div>
+    <div class="stat-card-label">Mensajes nuevos</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon">📦</div>
+    <div class="stat-card-num" style="<%= stats.pedidos > 0 ? 'color:var(--amarillo)' : '' %>"><%= stats.pedidos %></div>
+    <div class="stat-card-label">Pedidos pendientes</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+
+  <!-- Mensajes recientes -->
+  <div>
+    <div class="page-hdr">
+      <h1 style="font-size:1.3rem">Mensajes recientes</h1>
+      <a href="/admin/mensajes" class="btn btn-outline btn-sm">Ver todos</a>
+    </div>
+    <div class="tabla-wrap">
+      <% if (mensajes_recientes.length > 0) { %>
+      <table class="tabla">
+        <thead><tr><th>De</th><th>Asunto</th><th>Fecha</th></tr></thead>
+        <tbody>
+          <% mensajes_recientes.forEach(m => { %>
+          <tr>
+            <td>
+              <% if (!m.leido) { %><span style="color:var(--rojo);margin-right:0.4rem">●</span><% } %>
+              <strong><%= m.nombre %></strong><br>
+              <span style="font-size:0.8rem;color:var(--texto-s)"><%= m.email %></span>
+            </td>
+            <td style="font-size:0.88rem"><%= m.asunto || '(sin asunto)' %></td>
+            <td style="font-size:0.8rem;color:var(--texto-s)"><%= new Date(m.fecha).toLocaleDateString('es-ES') %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } else { %>
+      <div style="padding:1.5rem;color:var(--texto-s);font-size:0.9rem">Sin mensajes nuevos.</div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Pedidos recientes -->
+  <div>
+    <div class="page-hdr">
+      <h1 style="font-size:1.3rem">Pedidos recientes</h1>
+      <a href="/admin/pedidos" class="btn btn-outline btn-sm">Ver todos</a>
+    </div>
+    <div class="tabla-wrap">
+      <% if (pedidos_recientes.length > 0) { %>
+      <table class="tabla">
+        <thead><tr><th>Cliente</th><th>Producto</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>
+          <% pedidos_recientes.forEach(p => { %>
+          <tr>
+            <td><strong><%= p.nombre %></strong></td>
+            <td style="font-size:0.85rem"><%= p.producto_nombre || '—' %></td>
+            <td style="color:var(--rojo);font-family:var(--font-c);font-weight:700"><%= p.total ? p.total.toFixed(2)+'€' : '—' %></td>
+            <td>
+              <span class="badge <%= p.estado === 'pendiente' ? 'badge-amarillo' : p.estado === 'completado' ? 'badge-verde' : 'badge-gris' %>">
+                <%= p.estado %>
+              </span>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } else { %>
+      <div style="padding:1.5rem;color:var(--texto-s);font-size:0.9rem">Sin pedidos todavía.</div>
+      <% } %>
+    </div>
+  </div>
+
+</div>
+
+<!-- Accesos rápidos -->
+<div style="margin-top:2rem;display:flex;gap:0.75rem;flex-wrap:wrap">
+  <a href="/admin/noticias/nueva" class="btn btn-rojo">+ Nueva noticia</a>
+  <a href="/admin/jugadores/nuevo" class="btn btn-gris">+ Añadir jugador</a>
+  <a href="/admin/productos/nuevo" class="btn btn-gris">+ Nuevo producto</a>
+  <a href="/admin/patrocinadores/nuevo" class="btn btn-gris">+ Nuevo patrocinador</a>
+</div>
+
+<%- include('layout-bottom') %>

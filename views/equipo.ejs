@@ -1,0 +1,50 @@
+<%- include('partials/header', { titulo: 'Plantilla', descripcion: 'Conoce a todos los jugadores del equipo.' }) %>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-breadcrumb"><a href="/">Inicio</a> / Equipo</div>
+    <h1 class="page-h1">La <span style="color:var(--rojo)">Plantilla</span></h1>
+  </div>
+</div>
+
+<div class="seccion">
+  <% const posiciones = ['Portero','Defensa','Centrocampista','Delantero'];
+     posiciones.forEach(pos => {
+       const grupo = jugadores.filter(j => j.posicion === pos);
+       if (grupo.length > 0) { %>
+  <div style="margin-bottom:3rem">
+    <div class="nivel-titulo" style="display:flex;align-items:center;gap:1rem;font-family:var(--font-condensed);font-size:0.8rem;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:var(--gris-claro);margin-bottom:1.5rem">
+      <%= pos %>es
+      <span style="flex:1;height:1px;background:rgba(255,255,255,0.06);display:block"></span>
+    </div>
+    <div class="tabla-wrap">
+      <table class="tabla-jugadores">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Jugador</th>
+            <th>Posición</th>
+            <th>Edad</th>
+            <th>Partidos</th>
+            <th>Goles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% grupo.forEach(j => { %>
+          <tr>
+            <td class="dorsal"><%= j.dorsal %></td>
+            <td style="font-weight:600"><%= j.nombre %></td>
+            <td><span class="posicion-badge"><%= j.posicion %></span></td>
+            <td style="color:var(--gris-claro)"><%= j.edad || '—' %></td>
+            <td><%= j.partidos %></td>
+            <td style="color:var(--rojo);font-family:var(--font-condensed);font-weight:700"><%= j.goles %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <% } }) %>
+</div>
+
+<%- include('partials/footer') %>

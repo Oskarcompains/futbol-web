@@ -1,0 +1,27 @@
+<%- include('partials/header', { titulo: noticia.titulo, descripcion: noticia.resumen }) %>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-breadcrumb"><a href="/">Inicio</a> / <a href="/blog">Blog</a> / <%= noticia.categoria %></div>
+    <h1 class="page-h1" style="font-size:clamp(2rem,4vw,3.5rem)"><%= noticia.titulo %></h1>
+    <div style="margin-top:1rem; font-size:0.85rem; color:var(--gris-claro); font-family:var(--font-condensed); letter-spacing:0.1em">
+      <%= new Date(noticia.fecha).toLocaleDateString('es-ES', {weekday:'long',day:'numeric',month:'long',year:'numeric'}) %>
+    </div>
+  </div>
+</div>
+
+<div class="seccion">
+  <div class="noticia-detalle">
+    <div style="background:var(--gris-oscuro); aspect-ratio:16/7; display:flex; align-items:center; justify-content:center; font-size:6rem; margin-bottom:3rem; border-radius:2px">
+      <%= noticia.categoria === 'Partidos' ? '⚽' : noticia.categoria === 'Club' ? '🏟️' : '📰' %>
+    </div>
+    <div class="noticia-contenido">
+      <p><%= noticia.contenido %></p>
+    </div>
+    <div style="margin-top:3rem; padding-top:2rem; border-top:1px solid rgba(255,255,255,0.06)">
+      <a href="/blog" class="btn btn-secundario">← Volver al Blog</a>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

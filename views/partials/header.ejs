@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof titulo !== 'undefined' ? titulo + ' | Club Deportivo' : 'Club Deportivo' %></title>
+  <meta name="description" content="<%= typeof descripcion !== 'undefined' ? descripcion : 'Web oficial del Club Deportivo. Noticias, plantilla, tienda y más.' %>">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">⚽ Club<span>FC</span></a>
+  <ul class="nav-links">
+    <li><a href="/">Inicio</a></li>
+    <li><a href="/blog">Blog</a></li>
+    <li><a href="/equipo">Equipo</a></li>
+    <li><a href="/patrocinadores">Patrocinadores</a></li>
+    <li><a href="/tienda" class="nav-cta">Tienda</a></li>
+    <li><a href="/contacto">Contacto</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="Menú">☰</button>
+</nav>

@@ -1,0 +1,51 @@
+<%- include('layout-top', { titulo: jugador ? 'Editar jugador' : 'Nuevo jugador', activePage: 'jugadores', admin }) %>
+
+<div class="page-hdr">
+  <h1><%= jugador ? 'Editar jugador' : 'Nuevo jugador' %></h1>
+  <a href="/admin/jugadores" class="btn btn-outline">← Volver</a>
+</div>
+
+<div class="form-card">
+  <form action="<%= jugador ? '/admin/jugadores/editar/'+jugador.id : '/admin/jugadores/nuevo' %>" method="POST">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label class="form-label">Nombre completo *</label>
+        <input type="text" name="nombre" class="form-input" required value="<%= jugador ? jugador.nombre : '' %>" placeholder="Nombre del jugador">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dorsal *</label>
+        <input type="number" name="dorsal" class="form-input" required min="1" max="99" value="<%= jugador ? jugador.dorsal : '' %>" placeholder="1–99">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Posición *</label>
+        <select name="posicion" class="form-select">
+          <% ['Portero','Defensa','Centrocampista','Delantero'].forEach(pos => { %>
+          <option value="<%= pos %>" <%= jugador && jugador.posicion === pos ? 'selected' : '' %>><%= pos %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nacionalidad</label>
+        <input type="text" name="nacionalidad" class="form-input" value="<%= jugador ? jugador.nacionalidad : 'España' %>" placeholder="España">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Edad</label>
+        <input type="number" name="edad" class="form-input" min="15" max="50" value="<%= jugador ? jugador.edad : '' %>" placeholder="Ej: 24">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Partidos jugados</label>
+        <input type="number" name="partidos" class="form-input" min="0" value="<%= jugador ? jugador.partidos : 0 %>">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Goles</label>
+        <input type="number" name="goles" class="form-input" min="0" value="<%= jugador ? jugador.goles : 0 %>">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-rojo"><%= jugador ? '💾 Guardar cambios' : '+ Añadir jugador' %></button>
+      <a href="/admin/jugadores" class="btn btn-outline">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<%- include('layout-bottom') %>

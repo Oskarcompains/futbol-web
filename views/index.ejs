@@ -1,0 +1,125 @@
+<%- include('partials/header', { titulo: 'Inicio', descripcion: 'Web oficial del Club. Noticias, plantilla, tienda y patrocinadores.' }) %>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <div class="hero-left">
+      <div class="hero-tag">Temporada 2025</div>
+      <h1 class="hero-titulo">
+        Pasión<br>
+        <em>Sin Límites</em>
+      </h1>
+      <p class="hero-sub">
+        Más que un club. Una familia unida por el balón, el esfuerzo y la garra de nuestra afición.
+      </p>
+      <div class="hero-btns">
+        <a href="/blog" class="btn btn-primario">↗ Últimas Noticias</a>
+        <a href="/tienda" class="btn btn-secundario">Visitar Tienda</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num" data-target="22" data-suffix="">22</div>
+          <div class="stat-label">Partidos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-target="14" data-suffix="">14</div>
+          <div class="stat-label">Victorias</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-target="48" data-suffix="">48</div>
+          <div class="stat-label">Goles</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-target="1200" data-suffix="">1200</div>
+          <div class="stat-label">Aficionados</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-ring2"></div>
+      <div class="hero-ring"></div>
+      <div class="hero-escudo">
+        <svg class="escudo-svg" viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100 10 L180 45 L180 130 C180 180 100 230 100 230 C100 230 20 180 20 130 L20 45 Z" fill="#1E1E1E" stroke="#E8132B" stroke-width="3"/>
+          <path d="M100 25 L165 55 L165 130 C165 172 100 215 100 215 C100 215 35 172 35 130 L35 55 Z" fill="#141414"/>
+          <line x1="100" y1="25" x2="100" y2="215" stroke="#E8132B" stroke-width="2" opacity="0.4"/>
+          <line x1="35" y1="120" x2="165" y2="120" stroke="#E8132B" stroke-width="2" opacity="0.4"/>
+          <text x="100" y="100" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="38" fill="#E8132B" letter-spacing="2">CLUB</text>
+          <text x="100" y="140" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="26" fill="#F5F3EF" letter-spacing="3">FC</text>
+          <text x="100" y="168" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-size="11" fill="#888" letter-spacing="4">EST. 1985</text>
+          <circle cx="100" cy="75" r="4" fill="#E8132B"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ÚLTIMAS NOTICIAS -->
+<section class="seccion">
+  <div class="seccion-header">
+    <div class="seccion-tag">Blog</div>
+    <h2 class="seccion-titulo">Últimas <span>Noticias</span></h2>
+  </div>
+
+  <% if (noticias.length > 0) { %>
+  <div class="noticias-grid">
+    <% noticias.forEach((n, i) => { %>
+    <a href="/blog/<%= n.id %>" class="noticia-card <%= i === 0 ? 'noticia-card-grande' : '' %>">
+      <div class="noticia-img-wrap">
+        <div class="noticia-img">
+          <%= n.categoria === 'Partidos' ? '⚽' : n.categoria === 'Club' ? '🏟️' : '📰' %>
+        </div>
+      </div>
+      <div class="noticia-body">
+        <div class="noticia-cat"><%= n.categoria %></div>
+        <div class="noticia-titulo"><%= n.titulo %></div>
+        <% if (i === 0) { %>
+        <p class="noticia-resumen"><%= n.resumen %></p>
+        <% } %>
+        <div class="noticia-fecha"><%= new Date(n.fecha).toLocaleDateString('es-ES', {day:'numeric',month:'long',year:'numeric'}) %></div>
+      </div>
+    </a>
+    <% }) %>
+  </div>
+  <% } else { %>
+  <p style="color:var(--gris-claro)">Próximamente habrá noticias disponibles.</p>
+  <% } %>
+
+  <div class="noticias-cta">
+    <a href="/blog" class="btn btn-secundario">Ver todas las noticias →</a>
+  </div>
+</section>
+
+<!-- PATROCINADORES (preview) -->
+<section class="patrocinadores-section">
+  <div class="seccion">
+    <div class="seccion-header">
+      <div class="seccion-tag">Partners</div>
+      <h2 class="seccion-titulo">Nuestros <span>Patrocinadores</span></h2>
+    </div>
+    <div class="patrocinadores-row">
+      <% patrocinadores.slice(0,5).forEach(p => { %>
+      <div class="patrocinador-card">
+        <div class="patrocinador-nombre"><%= p.nombre %></div>
+      </div>
+      <% }) %>
+    </div>
+    <div style="margin-top:2rem">
+      <a href="/patrocinadores" class="btn btn-secundario">Ver todos los patrocinadores →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA TIENDA -->
+<section style="background:var(--rojo); padding: 5rem 2.5rem; text-align:center">
+  <div style="max-width:600px; margin:0 auto">
+    <div style="font-family:var(--font-condensed); font-size:0.85rem; font-weight:700; letter-spacing:0.3em; text-transform:uppercase; color:rgba(255,255,255,0.6); margin-bottom:1rem">Tienda Oficial</div>
+    <h2 style="font-family:var(--font-titulo); font-size:clamp(2.5rem,5vw,4rem); letter-spacing:0.02em; margin-bottom:1rem; line-height:0.95">Viste Los Colores Del Club</h2>
+    <p style="color:rgba(255,255,255,0.75); margin-bottom:2rem; font-size:1.05rem">Camisetas, sudaderas, accesorios y más. Producto oficial de alta calidad.</p>
+    <a href="/tienda" style="background:var(--negro); color:var(--blanco); font-family:var(--font-condensed); font-weight:700; font-size:1rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.9rem 2.5rem; display:inline-block; transition:opacity 0.2s" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">Ir a la Tienda ↗</a>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

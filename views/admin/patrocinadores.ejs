@@ -1,0 +1,44 @@
+<%- include('layout-top', { titulo: 'Patrocinadores', activePage: 'patrocinadores', admin }) %>
+
+<div class="page-hdr">
+  <h1>Patrocinadores</h1>
+  <a href="/admin/patrocinadores/nuevo" class="btn btn-rojo">+ Nuevo patrocinador</a>
+</div>
+
+<div class="tabla-wrap">
+  <% if (patrocinadores.length > 0) { %>
+  <table class="tabla">
+    <thead>
+      <tr><th>Nombre</th><th>Nivel</th><th>Web</th><th>Descripción</th><th>Acciones</th></tr>
+    </thead>
+    <tbody>
+      <% patrocinadores.forEach(p => { %>
+      <tr>
+        <td><strong><%= p.nombre %></strong></td>
+        <td>
+          <span class="badge <%= p.nivel === 3 ? 'badge-amarillo' : p.nivel === 2 ? 'badge-verde' : 'badge-gris' %>">
+            <%= p.nivel === 3 ? '⭐ Principal' : p.nivel === 2 ? 'Colaborador' : 'Amigo' %>
+          </span>
+        </td>
+        <td style="font-size:0.82rem">
+          <% if (p.web) { %><a href="<%= p.web %>" target="_blank" style="color:var(--rojo)"><%= p.web.replace('https://','').substring(0,30) %></a><% } else { %>—<% } %>
+        </td>
+        <td style="font-size:0.82rem;color:var(--texto-s)"><%= p.descripcion ? p.descripcion.substring(0,50)+'...' : '—' %></td>
+        <td>
+          <div style="display:flex;gap:0.4rem">
+            <a href="/admin/patrocinadores/editar/<%= p.id %>" class="btn btn-gris btn-xs">✏️ Editar</a>
+            <form action="/admin/patrocinadores/eliminar/<%= p.id %>" method="POST" data-confirm="¿Eliminar a '<%= p.nombre %>'?">
+              <button type="submit" class="btn btn-peligro btn-xs">🗑</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } else { %>
+  <div style="padding:2rem;color:var(--texto-s)">No hay patrocinadores. <a href="/admin/patrocinadores/nuevo" style="color:var(--rojo)">Añade el primero →</a></div>
+  <% } %>
+</div>
+
+<%- include('layout-bottom') %>

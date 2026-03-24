@@ -1,0 +1,41 @@
+<%- include('partials/header', { titulo: 'Tienda', descripcion: 'Tienda oficial del club. Camisetas, ropa y accesorios.' }) %>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-breadcrumb"><a href="/">Inicio</a> / Tienda</div>
+    <h1 class="page-h1">Tienda <span style="color:var(--rojo)">Oficial</span></h1>
+  </div>
+</div>
+
+<div class="seccion">
+  <div class="filtros">
+    <a href="/tienda" class="filtro-btn <%= !categoriaActiva ? 'activo' : '' %>">Todo</a>
+    <% categorias.forEach(cat => { %>
+    <a href="/tienda?categoria=<%= encodeURIComponent(cat) %>" class="filtro-btn <%= categoriaActiva === cat ? 'activo' : '' %>"><%= cat %></a>
+    <% }) %>
+  </div>
+
+  <% if (productos.length > 0) { %>
+  <div class="productos-grid">
+    <% productos.forEach(p => { %>
+    <a href="/tienda/producto/<%= p.id %>" class="producto-card">
+      <div class="producto-overlay">Ver producto</div>
+      <div class="producto-img-wrap">
+        <div class="producto-img">
+          <%= p.categoria === 'Camisetas' ? '👕' : p.categoria === 'Ropa' ? '🧥' : p.categoria === 'Accesorios' ? '🧢' : '⚽' %>
+        </div>
+      </div>
+      <div class="producto-body">
+        <div class="producto-nombre"><%= p.nombre %></div>
+        <div class="producto-cat"><%= p.categoria %></div>
+        <div class="producto-precio"><%= p.precio.toFixed(2) %>€</div>
+      </div>
+    </a>
+    <% }) %>
+  </div>
+  <% } else { %>
+  <p style="color:var(--gris-claro)">No hay productos disponibles en esta categoría.</p>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

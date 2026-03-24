@@ -1,0 +1,69 @@
+<%- include('partials/header', { titulo: 'Contacto', descripcion: 'Ponte en contacto con el club.' }) %>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-breadcrumb"><a href="/">Inicio</a> / Contacto</div>
+    <h1 class="page-h1">Habla Con <span style="color:var(--rojo)">Nosotros</span></h1>
+  </div>
+</div>
+
+<div class="seccion">
+  <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:5rem;align-items:start">
+    <div>
+      <p style="color:var(--gris-claro);line-height:1.8;margin-bottom:2.5rem;font-size:1.05rem">
+        ¿Tienes alguna pregunta, quieres hacerte socio o patrocinar al club? Escríbenos y te responderemos lo antes posible.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:1.5rem">
+        <div>
+          <div style="font-family:var(--font-condensed);font-size:0.75rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--rojo);margin-bottom:0.4rem">Email</div>
+          <div>info@clubfc.es</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-condensed);font-size:0.75rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--rojo);margin-bottom:0.4rem">Teléfono</div>
+          <div>+34 948 000 000</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-condensed);font-size:0.75rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--rojo);margin-bottom:0.4rem">Dirección</div>
+          <div>Estadio Municipal, Calle del Fútbol 1<br>31001 Pamplona, Navarra</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-condensed);font-size:0.75rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--rojo);margin-bottom:0.4rem">Horario de oficina</div>
+          <div>Lun – Vie: 10:00 – 18:00</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <% if (success) { %>
+      <div class="alerta alerta-exito">✅ <%= success %></div>
+      <% } %>
+      <% if (error) { %>
+      <div class="alerta alerta-error">⚠️ <%= error %></div>
+      <% } %>
+
+      <form action="/contacto" method="POST">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="nombre">Nombre *</label>
+            <input type="text" id="nombre" name="nombre" class="form-input" required placeholder="Tu nombre">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="email">Email *</label>
+            <input type="email" id="email" name="email" class="form-input" required placeholder="tu@email.com">
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="asunto">Asunto</label>
+            <input type="text" id="asunto" name="asunto" class="form-input" placeholder="¿De qué quieres hablar?">
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="mensaje">Mensaje *</label>
+            <textarea id="mensaje" name="mensaje" class="form-textarea" required placeholder="Escribe tu mensaje aquí..."></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primario form-submit">Enviar Mensaje ↗</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

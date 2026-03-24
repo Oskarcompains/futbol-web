@@ -1,0 +1,40 @@
+<%- include('layout-top', { titulo: 'Jugadores', activePage: 'jugadores', admin }) %>
+
+<div class="page-hdr">
+  <h1>Jugadores</h1>
+  <a href="/admin/jugadores/nuevo" class="btn btn-rojo">+ Añadir jugador</a>
+</div>
+
+<div class="tabla-wrap">
+  <% if (jugadores.length > 0) { %>
+  <table class="tabla">
+    <thead>
+      <tr><th>#</th><th>Nombre</th><th>Posición</th><th>Edad</th><th>Partidos</th><th>Goles</th><th>Acciones</th></tr>
+    </thead>
+    <tbody>
+      <% jugadores.forEach(j => { %>
+      <tr>
+        <td style="font-family:var(--font-t);font-size:1.4rem;color:var(--rojo)"><%= j.dorsal %></td>
+        <td><strong><%= j.nombre %></strong><br><span style="font-size:0.8rem;color:var(--texto-s)"><%= j.nacionalidad %></span></td>
+        <td><span class="badge badge-rojo"><%= j.posicion %></span></td>
+        <td style="color:var(--texto-s)"><%= j.edad || '—' %></td>
+        <td><%= j.partidos %></td>
+        <td style="color:var(--rojo);font-family:var(--font-c);font-weight:700"><%= j.goles %></td>
+        <td>
+          <div style="display:flex;gap:0.4rem">
+            <a href="/admin/jugadores/editar/<%= j.id %>" class="btn btn-gris btn-xs">✏️ Editar</a>
+            <form action="/admin/jugadores/eliminar/<%= j.id %>" method="POST" data-confirm="¿Eliminar a <%= j.nombre %>?">
+              <button type="submit" class="btn btn-peligro btn-xs">🗑</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } else { %>
+  <div style="padding:2rem;color:var(--texto-s)">No hay jugadores. <a href="/admin/jugadores/nuevo" style="color:var(--rojo)">Añade el primero →</a></div>
+  <% } %>
+</div>
+
+<%- include('layout-bottom') %>
