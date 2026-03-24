@@ -18,8 +18,26 @@
   <% if (productos.length > 0) { %>
   <div class="productos-grid">
     <% productos.forEach(p => { %>
+    <% if (p.stock === 0) { %>
+    <div class="producto-card producto-agotado">
+      <div class="producto-badge-agotado">AGOTADO</div>
+      <div class="producto-img-wrap">
+        <div class="producto-img">
+          <%= p.categoria === 'Camisetas' ? '👕' : p.categoria === 'Ropa' ? '🧥' : p.categoria === 'Accesorios' ? '🧢' : '⚽' %>
+        </div>
+      </div>
+      <div class="producto-body">
+        <div class="producto-nombre"><%= p.nombre %></div>
+        <div class="producto-cat"><%= p.categoria %></div>
+        <div class="producto-precio"><%= p.precio.toFixed(2) %>€</div>
+      </div>
+    </div>
+    <% } else { %>
     <a href="/tienda/producto/<%= p.id %>" class="producto-card">
       <div class="producto-overlay">Ver producto</div>
+      <% if (p.stock > 0 && p.stock < 10) { %>
+      <div class="producto-badge-pocas">¡Últimas <%= p.stock %>!</div>
+      <% } %>
       <div class="producto-img-wrap">
         <div class="producto-img">
           <%= p.categoria === 'Camisetas' ? '👕' : p.categoria === 'Ropa' ? '🧥' : p.categoria === 'Accesorios' ? '🧢' : '⚽' %>
@@ -31,6 +49,7 @@
         <div class="producto-precio"><%= p.precio.toFixed(2) %>€</div>
       </div>
     </a>
+    <% } %>
     <% }) %>
   </div>
   <% } else { %>
