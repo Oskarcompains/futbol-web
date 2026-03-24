@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Sessions
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'clubfc-secret-2025-cambiar-en-produccion',
+  secret: process.env.SESSION_SECRET || 'sotoibarbasoa-secret-2025-cambiar-en-produccion',
   resave: false,
   saveUninitialized: false,
   cookie: {

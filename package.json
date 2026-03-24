@@ -1,7 +1,7 @@
 {
-  "name": "futbol-web",
+  "name": "soto-ibarbasoa-web",
   "version": "1.0.0",
-  "description": "Web oficial del equipo de fútbol",
+  "description": "Web oficial del Soto Ibarbasoa",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
