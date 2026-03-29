@@ -86,6 +86,11 @@ app.get('/patrocinadores', (req, res) => {
   res.render('patrocinadores', { patrocinadores });
 });
 
+// JUEGO
+app.get('/juego', (req, res) => {
+  res.render('juego');
+});
+
 // TIENDA
 app.use('/tienda', shopRouter);
 
