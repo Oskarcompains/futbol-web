@@ -39,7 +39,7 @@ router.get('/', requireAuth, (req, res) => {
     productos: db.prepare('SELECT COUNT(*) as c FROM productos').get().c,
     patrocinadores: db.prepare('SELECT COUNT(*) as c FROM patrocinadores').get().c,
     mensajes: db.prepare('SELECT COUNT(*) as c FROM mensajes WHERE leido = 0').get().c,
-    pedidos: db.prepare('SELECT COUNT(*) as c FROM pedidos WHERE estado = "pendiente"').get().c,
+    pedidos: db.prepare("SELECT COUNT(*) as c FROM pedidos WHERE estado = 'pendiente'").get().c,
   };
   const mensajes_recientes = db.prepare('SELECT * FROM mensajes ORDER BY fecha DESC LIMIT 5').all();
   const pedidos_recientes = db.prepare(`
