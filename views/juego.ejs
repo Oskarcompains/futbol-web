@@ -1,0 +1,498 @@
+<%- include('partials/header', { titulo: 'Penaltis', descripcion: 'Lanza penaltis contra el portero del Soto Ibarbasoa. ¿Cuántos metes?' }) %>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-breadcrumb"><a href="/">Inicio</a> / Juego</div>
+    <h1 class="page-h1">Lanza <span style="color:var(--rojo)">Penaltis</span></h1>
+  </div>
+</div>
+
+<div class="seccion" style="display:flex;flex-direction:column;align-items:center;gap:1.25rem;padding-bottom:3rem">
+  <canvas id="penalti" width="700" height="460"
+    style="width:100%;max-width:700px;display:block;cursor:crosshair;border:1px solid rgba(255,255,255,0.08)">
+  </canvas>
+  <p style="color:var(--gris-claro);font-family:var(--font-condensed);font-size:0.88rem;letter-spacing:0.05em;text-align:center;max-width:600px">
+    Apunta con el ratón dentro de la portería y haz clic para lanzar &nbsp;·&nbsp; El portero <em>lee tu posición</em> — ¡fíntale!
+  </p>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+(function () {
+  'use strict';
+
+  const canvas = document.getElementById('penalti');
+  const ctx    = canvas.getContext('2d');
+  const W = 700, H = 460;
+
+  /* ── Layout ───────────────────────────────────────────────────────────── */
+  const GL = 158, GR = 542;          // goal left / right X
+  const GT = 78,  GB = 248;          // goal top / bottom Y (crossbar / ground)
+  const GW = GR - GL, GH = GB - GT;
+
+  const BX = 350, BY = 418, BR = 14; // ball start & radius
+
+  const KW = 90, KH = 66;            // keeper sprite size
+  const KY = GB - KH;                // keeper top-Y
+
+  const MAX_SHOTS  = 5;
+  const SHOOT_MS   = 680;
+  const RESULT_MS  = 1500;
+
+  // Keeper X (left edge) for each of the 3 zones
+  const KZONE_X = [
+    GL + GW * 0.12 - KW / 2,   // zone 0 = left
+    GL + GW * 0.50 - KW / 2,   // zone 1 = center
+    GL + GW * 0.88 - KW / 2,   // zone 2 = right
+  ];
+  const CENTER_KX = KZONE_X[1];
+
+  /* ── State ────────────────────────────────────────────────────────────── */
+  let phase        = 'idle';  // idle | ready | shooting | result | done
+  let shots        = 0;
+  let goals        = 0;
+  let shotResults  = [];      // 'goal' | 'save'
+  let ballPos      = { x: BX, y: BY };
+  let shootTarget  = null;
+  let keeperX      = CENTER_KX;
+  let keeperZone   = 1;
+  let aimPos       = null;
+  let lastHoverZone = 1;  // zone player was hovering before shooting (keeper reads this)
+  let animStart    = 0;
+  let isGoal       = false;
+
+  /* ── Helpers ──────────────────────────────────────────────────────────── */
+  function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+
+  function zoneOf(x) {
+    if (x < GL + GW / 3) return 0;
+    if (x < GL + 2 * GW / 3) return 1;
+    return 2;
+  }
+
+  function canvasCoords(e) {
+    const r  = canvas.getBoundingClientRect();
+    const sx = W / r.width, sy = H / r.height;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: (cx - r.left) * sx, y: (cy - r.top) * sy };
+  }
+
+  function insideGoal(p) {
+    return p.x >= GL && p.x <= GR && p.y >= GT && p.y <= GB;
+  }
+
+  /* ── Drawing ──────────────────────────────────────────────────────────── */
+  function drawField() {
+    // Sky
+    const sky = ctx.createLinearGradient(0, 0, 0, H * 0.58);
+    sky.addColorStop(0, '#07071a');
+    sky.addColorStop(1, '#131332');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H * 0.58);
+
+    // Pitch
+    const pitch = ctx.createLinearGradient(0, GB, 0, H);
+    pitch.addColorStop(0, '#1e7c30');
+    pitch.addColorStop(1, '#124d1e');
+    ctx.fillStyle = pitch;
+    ctx.fillRect(0, GB, W, H - GB);
+
+    // Stripes
+    for (let y = GB; y < H; y += 32) {
+      ctx.fillStyle = 'rgba(0,0,0,0.07)';
+      ctx.fillRect(0, y, W, 16);
+    }
+
+    // Field lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+    ctx.lineWidth   = 1.5;
+    ctx.strokeRect(78,  GB, 544, 130);   // penalty box
+    ctx.strokeRect(198, GB, 304, 65);    // goal area
+
+    // Arc
+    ctx.beginPath();
+    ctx.arc(BX, GB + 8, 58, Math.PI * 1.22, Math.PI * 1.78);
+    ctx.stroke();
+
+    // Spot
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath();
+    ctx.arc(BX, BY - 4, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawNet() {
+    ctx.fillStyle = 'rgba(0,0,0,0.42)';
+    ctx.fillRect(GL, GT, GW, GH);
+    ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+    ctx.lineWidth   = 1;
+    for (let x = GL; x <= GR; x += 22) {
+      ctx.beginPath(); ctx.moveTo(x, GT); ctx.lineTo(x, GB); ctx.stroke();
+    }
+    for (let y = GT; y <= GB; y += 18) {
+      ctx.beginPath(); ctx.moveTo(GL, y); ctx.lineTo(GR, y); ctx.stroke();
+    }
+  }
+
+  function drawPosts() {
+    // Depth shadow
+    ctx.lineWidth   = 3;
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineCap     = 'round';
+    ctx.lineJoin    = 'round';
+    ctx.beginPath();
+    ctx.moveTo(GL + 6, GB); ctx.lineTo(GL + 6, GT + 7);
+    ctx.lineTo(GR - 6, GT + 7); ctx.lineTo(GR - 6, GB);
+    ctx.stroke();
+
+    // Main posts
+    ctx.lineWidth   = 7;
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.beginPath();
+    ctx.moveTo(GL, GB); ctx.lineTo(GL, GT); ctx.lineTo(GR, GT); ctx.lineTo(GR, GB);
+    ctx.stroke();
+
+    // Highlight edge
+    ctx.lineWidth   = 2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.beginPath();
+    ctx.moveTo(GL - 1, GB); ctx.lineTo(GL - 1, GT - 1);
+    ctx.lineTo(GR + 1, GT - 1); ctx.lineTo(GR + 1, GB);
+    ctx.stroke();
+  }
+
+  function drawKeeper(kx) {
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.beginPath();
+    ctx.ellipse(kx + KW / 2, GB + 5, KW * 0.48, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Body / kit
+    const kg = ctx.createLinearGradient(kx, KY, kx, KY + KH);
+    kg.addColorStop(0, '#E8132B');
+    kg.addColorStop(1, '#8e0b1a');
+    ctx.fillStyle = kg;
+    ctx.fillRect(kx + 7, KY, KW - 14, KH);
+
+    // Shorts
+    ctx.fillStyle = '#111';
+    ctx.fillRect(kx + 18, KY + KH - 16, KW - 36, 18);
+
+    // Left glove
+    ctx.fillStyle   = '#FFD700';
+    ctx.strokeStyle = '#b89200';
+    ctx.lineWidth   = 1;
+    ctx.beginPath(); ctx.arc(kx + 1, KY + 19, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    // Right glove
+    ctx.beginPath(); ctx.arc(kx + KW - 1, KY + 19, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    // Head
+    ctx.fillStyle = '#f0c888';
+    ctx.beginPath(); ctx.arc(kx + KW / 2, KY - 14, 16, 0, Math.PI * 2); ctx.fill();
+
+    // Hair
+    ctx.fillStyle = '#3a1e00';
+    ctx.beginPath(); ctx.arc(kx + KW / 2, KY - 22, 16, Math.PI, 0); ctx.fill();
+
+    // Eyes
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath(); ctx.arc(kx + KW / 2 - 5, KY - 15, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(kx + KW / 2 + 5, KY - 15, 2.5, 0, Math.PI * 2); ctx.fill();
+
+    // Kit number
+    ctx.fillStyle   = 'rgba(255,255,255,0.82)';
+    ctx.font        = 'bold 14px "Barlow", sans-serif';
+    ctx.textAlign   = 'center';
+    ctx.fillText('1', kx + KW / 2, KY + KH * 0.52);
+  }
+
+  function drawBall(x, y, scale) {
+    const r = BR * scale;
+    // Drop shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.beginPath();
+    ctx.ellipse(x, y + r * 0.92, r * 0.82, r * 0.26, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Ball
+    ctx.fillStyle = '#f5f3ef';
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    // Shade
+    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+    ctx.beginPath(); ctx.arc(x + r * 0.22, y + r * 0.22, r * 0.68, 0, Math.PI * 2); ctx.fill();
+    // Specular
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath(); ctx.arc(x - r * 0.3, y - r * 0.3, r * 0.26, 0, Math.PI * 2); ctx.fill();
+    // Patches
+    ctx.fillStyle = '#1a1a1a';
+    [0, 72, 144, 216, 288].forEach(deg => {
+      const rad = (deg - 90) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.arc(x + Math.cos(rad) * r * 0.42, y + Math.sin(rad) * r * 0.42, r * 0.17, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function drawAim() {
+    if (!aimPos) return;
+    const { x, y } = aimPos;
+    const z = zoneOf(x);
+
+    // Zone highlight
+    ctx.fillStyle = 'rgba(232,19,43,0.1)';
+    ctx.fillRect(GL + z * GW / 3, GT, GW / 3, GH);
+
+    // Crosshair
+    const r = 19;
+    ctx.strokeStyle = 'rgba(255,60,60,0.82)';
+    ctx.lineWidth   = 2;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - r - 8, y); ctx.lineTo(x + r + 8, y);
+    ctx.moveTo(x, y - r - 8); ctx.lineTo(x, y + r + 8);
+    ctx.stroke();
+  }
+
+  function drawHUD() {
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    ctx.fillRect(0, 0, W, 50);
+
+    // Goals
+    ctx.textAlign = 'left';
+    ctx.font      = '600 16px "Barlow Condensed", sans-serif';
+    ctx.fillStyle = '#aaa';
+    ctx.fillText('GOLES', 16, 20);
+    ctx.font      = '700 28px "Bebas Neue", sans-serif';
+    ctx.fillStyle = '#E8132B';
+    ctx.fillText(goals, 16, 44);
+
+    // Shot counter (center)
+    ctx.textAlign = 'center';
+    ctx.font      = '500 11px "Barlow Condensed", sans-serif';
+    ctx.fillStyle = '#666';
+    ctx.fillText('PENALTIS', W / 2, 16);
+    ctx.font      = '700 30px "Bebas Neue", sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(shots + ' / ' + MAX_SHOTS, W / 2, 40);
+
+    // Shot result dots
+    for (let i = 0; i < MAX_SHOTS; i++) {
+      const bx = W - 18 - (MAX_SHOTS - 1 - i) * 32;
+      ctx.fillStyle = i < shotResults.length
+        ? (shotResults[i] === 'goal' ? '#E8132B' : '#3a3a3a')
+        : 'rgba(255,255,255,0.08)';
+      ctx.beginPath(); ctx.arc(bx, 25, 11, 0, Math.PI * 2); ctx.fill();
+      if (i < shotResults.length) {
+        ctx.font      = '13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(shotResults[i] === 'goal' ? '⚽' : '✋', bx, 29);
+      }
+    }
+  }
+
+  function drawIdleOverlay() {
+    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center';
+    ctx.font      = '900 60px "Bebas Neue", sans-serif';
+    ctx.fillStyle = '#E8132B';
+    ctx.fillText('TANDA DE PENALTIS', W / 2, H / 2 - 14);
+    ctx.font      = '400 18px "Barlow Condensed", sans-serif';
+    ctx.fillStyle = '#999';
+    ctx.fillText('Haz clic para empezar', W / 2, H / 2 + 24);
+  }
+
+  function drawResultOverlay(alpha) {
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle   = 'rgba(0,0,0,0.52)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.font        = '900 96px "Bebas Neue", sans-serif';
+    ctx.textAlign   = 'center';
+    if (isGoal) {
+      ctx.fillStyle = '#E8132B';
+      ctx.fillText('¡GOL!', W / 2 + 4, H / 2 + 38 + 4);
+      ctx.fillStyle = '#fff';
+      ctx.fillText('¡GOL!', W / 2, H / 2 + 38);
+    } else {
+      ctx.fillStyle = '#555';
+      ctx.fillText('PARADA', W / 2 + 3, H / 2 + 38 + 3);
+      ctx.fillStyle = '#ccc';
+      ctx.fillText('PARADA', W / 2, H / 2 + 38);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawDoneScreen() {
+    ctx.fillStyle = 'rgba(0,0,0,0.88)';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.textAlign = 'center';
+    ctx.font      = '700 42px "Bebas Neue", sans-serif';
+    ctx.fillStyle = '#E8132B';
+    ctx.fillText('FIN DE LA TANDA', W / 2, H / 2 - 104);
+
+    ctx.font      = '900 110px "Bebas Neue", sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(goals + ' / ' + MAX_SHOTS, W / 2, H / 2 + 20);
+
+    const msgs = [
+      'El portero ha sido imbatible hoy...',
+      'El portero ha ganado este round',
+      'Buen intento, sigue practicando',
+      'Buen resultado, ¡casi!',
+      '¡Muy bien! Casi perfectos',
+      '¡PERFECTO! Eres un crack 🏆'
+    ];
+    ctx.font      = '400 20px "Barlow Condensed", sans-serif';
+    ctx.fillStyle = '#888';
+    ctx.fillText(msgs[goals] || msgs[0], W / 2, H / 2 + 62);
+
+    // Replay button
+    const bw = 240, bh = 50, bx = W / 2 - 120, by = H / 2 + 92;
+    ctx.fillStyle = '#E8132B';
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.fillStyle = '#fff';
+    ctx.font      = '700 21px "Barlow Condensed", sans-serif';
+    ctx.fillText('JUGAR DE NUEVO', W / 2, by + bh * 0.64);
+  }
+
+  /* ── Render loop ──────────────────────────────────────────────────────── */
+  function render(now) {
+    ctx.clearRect(0, 0, W, H);
+    drawField();
+    drawNet();
+
+    if (phase === 'idle') {
+      drawPosts();
+      drawKeeper(CENTER_KX);
+      drawBall(BX, BY, 1);
+      drawHUD();
+      drawIdleOverlay();
+
+    } else if (phase === 'ready') {
+      drawPosts();
+      drawKeeper(CENTER_KX);
+      drawBall(BX, BY, 1);
+      drawAim();
+      drawHUD();
+
+    } else if (phase === 'shooting') {
+      const elapsed = now - animStart;
+      const t  = Math.min(elapsed / SHOOT_MS, 1);
+      const et = ease(t);
+
+      // Bezier ball arc
+      const cpX = (BX + shootTarget.x) / 2;
+      const cpY = GT - 88;
+      const bx  = (1 - et) * (1 - et) * BX + 2 * (1 - et) * et * cpX + et * et * shootTarget.x;
+      const by  = (1 - et) * (1 - et) * BY + 2 * (1 - et) * et * cpY + et * et * shootTarget.y;
+      ballPos   = { x: bx, y: by };
+
+      // Keeper dive
+      const kEnd = KZONE_X[keeperZone];
+      keeperX    = CENTER_KX + (kEnd - CENTER_KX) * ease(Math.min(t * 1.7, 1));
+
+      drawPosts();
+      drawKeeper(keeperX);
+      drawBall(bx, by, 1 - et * 0.42);
+      drawHUD();
+
+      if (t >= 1) {
+        isGoal = zoneOf(shootTarget.x) !== keeperZone;
+        if (isGoal) goals++;
+        shotResults.push(isGoal ? 'goal' : 'save');
+        phase     = 'result';
+        animStart = now;
+      }
+
+    } else if (phase === 'result') {
+      const elapsed = now - animStart;
+      const fadeIn  = Math.min(elapsed / 260, 1);
+      const fadeOut = Math.max((elapsed - (RESULT_MS - 380)) / 380, 0);
+      const alpha   = Math.max(0, fadeIn - fadeOut);
+
+      drawPosts();
+      drawKeeper(keeperX);
+      drawBall(ballPos.x, ballPos.y, 0.6);
+      drawHUD();
+      drawResultOverlay(alpha);
+
+      if (elapsed >= RESULT_MS) {
+        shots++;
+        ballPos  = { x: BX, y: BY };
+        keeperX  = CENTER_KX;
+        phase    = shots >= MAX_SHOTS ? 'done' : 'ready';
+        lastHoverZone = 1;
+      }
+
+    } else if (phase === 'done') {
+      drawPosts();
+      drawKeeper(keeperX);
+      drawBall(BX, BY, 1);
+      drawHUD();
+      drawDoneScreen();
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  /* ── Input ────────────────────────────────────────────────────────────── */
+  canvas.addEventListener('mousemove', e => {
+    if (phase !== 'ready') { aimPos = null; return; }
+    const p = canvasCoords(e);
+    if (insideGoal(p)) {
+      aimPos        = p;
+      lastHoverZone = zoneOf(p.x);
+      canvas.style.cursor = 'crosshair';
+    } else {
+      aimPos = null;
+      canvas.style.cursor = 'default';
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => { aimPos = null; });
+
+  function chooseKeeperZone() {
+    // Keeper is biased (42%) toward where player was hovering (reads body language)
+    // Rest is random — creates a finta/fake mechanic
+    const r  = Math.random();
+    const hz = lastHoverZone;
+    if (r < 0.42) return hz;
+    const others = [0, 1, 2].filter(z => z !== hz);
+    return others[Math.random() < 0.5 ? 0 : 1];
+  }
+
+  function handleClick(p) {
+    if (phase === 'idle') { phase = 'ready'; return; }
+
+    if (phase === 'done') {
+      const bw = 240, bh = 50, bx = W / 2 - 120, by = H / 2 + 92;
+      if (p.x >= bx && p.x <= bx + bw && p.y >= by && p.y <= by + bh) {
+        phase = 'idle'; shots = 0; goals = 0; shotResults = [];
+        ballPos = { x: BX, y: BY }; keeperX = CENTER_KX; lastHoverZone = 1;
+      }
+      return;
+    }
+
+    if (phase === 'ready' && insideGoal(p)) {
+      shootTarget  = { x: p.x, y: p.y };
+      keeperZone   = chooseKeeperZone();
+      phase        = 'shooting';
+      animStart    = performance.now();
+      aimPos       = null;
+    }
+  }
+
+  canvas.addEventListener('click', e => handleClick(canvasCoords(e)));
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    handleClick(canvasCoords(e));
+  }, { passive: false });
+
+  requestAnimationFrame(render);
+})();
+</script>
