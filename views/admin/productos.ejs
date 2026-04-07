@@ -1,33 +1,134 @@
 <%- include('layout-top', { titulo: 'Productos', activePage: 'productos', admin }) %>
 
+<!-- ── Stats ──────────────────────────────────────────────────────────────── -->
+<div class="stat-grid" style="margin-bottom:1.5rem">
+  <div class="stat-card">
+    <div class="stat-card-icon">🛍️</div>
+    <div class="stat-card-num"><%= stats.total %></div>
+    <div class="stat-card-label">Total productos</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon">🔴</div>
+    <div class="stat-card-num" style="color:<%= stats.agotados > 0 ? 'var(--rojo)' : 'var(--verde)' %>">
+      <%= stats.agotados %>
+    </div>
+    <div class="stat-card-label">Agotados</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon">⚠️</div>
+    <div class="stat-card-num" style="color:<%= stats.bajo_stock > 0 ? 'var(--amarillo)' : 'var(--verde)' %>">
+      <%= stats.bajo_stock %>
+    </div>
+    <div class="stat-card-label">Stock bajo (&lt;10 uds.)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon">💰</div>
+    <div class="stat-card-num" style="font-size:1.8rem"><%= stats.valor_inventario.toFixed(0) %>€</div>
+    <div class="stat-card-label">Valor inventario</div>
+  </div>
+</div>
+
+<!-- ── Header + controles ─────────────────────────────────────────────────── -->
 <div class="page-hdr">
   <h1>Productos</h1>
   <a href="/admin/productos/nuevo" class="btn btn-rojo">+ Nuevo producto</a>
 </div>
 
+<!-- Búsqueda y filtros -->
+<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap">
+  <input
+    type="text"
+    id="buscador"
+    placeholder="Buscar producto..."
+    class="form-input"
+    style="max-width:260px;padding:0.45rem 0.85rem;font-size:0.9rem"
+  >
+  <div style="display:flex;gap:0.4rem;flex-wrap:wrap" id="filtros-cat">
+    <button class="btn btn-xs filtro-cat activo-cat" data-cat="">Todos</button>
+    <% const cats = [...new Set(productos.map(p => p.categoria))]; %>
+    <% cats.forEach(cat => { %>
+    <button class="btn btn-xs filtro-cat" data-cat="<%= cat %>"><%= cat %></button>
+    <% }) %>
+  </div>
+</div>
+
+<!-- ── Tabla ──────────────────────────────────────────────────────────────── -->
 <div class="tabla-wrap">
   <% if (productos.length > 0) { %>
-  <table class="tabla">
+  <table class="tabla" id="tabla-productos">
     <thead>
-      <tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+      <tr>
+        <th>ID</th>
+        <th>Producto</th>
+        <th>Categoría</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
     </thead>
     <tbody>
       <% productos.forEach(p => { %>
-      <tr>
+      <tr data-nombre="<%= p.nombre.toLowerCase() %>" data-cat="<%= p.categoria %>">
         <td style="color:var(--texto-s);font-size:0.8rem">#<%= p.id %></td>
+
+        <!-- Nombre + descripción -->
         <td>
-          <strong><%= p.nombre %></strong><br>
-          <span style="font-size:0.8rem;color:var(--texto-s)"><%= p.descripcion ? p.descripcion.substring(0,55)+'...' : '' %></span>
+          <strong><%= p.nombre %></strong>
+          <% if (p.descripcion) { %>
+          <br><span style="font-size:0.78rem;color:var(--texto-s)">
+            <%= p.descripcion.length > 60 ? p.descripcion.substring(0,60)+'…' : p.descripcion %>
+          </span>
+          <% } %>
         </td>
+
+        <!-- Categoría -->
         <td><span class="badge badge-gris"><%= p.categoria %></span></td>
-        <td style="font-family:var(--font-c);font-weight:700;color:var(--rojo);font-size:1.1rem"><%= p.precio.toFixed(2) %>€</td>
-        <td style="color:<%= p.stock < 10 ? '#f5a623' : 'var(--texto-s)' %>"><%= p.stock %> uds.</td>
+
+        <!-- Precio -->
+        <td style="font-family:var(--font-c);font-weight:700;color:var(--rojo);font-size:1.05rem">
+          <%= p.precio.toFixed(2) %>€
+        </td>
+
+        <!-- Stock con edición rápida -->
+        <td>
+          <form action="/admin/productos/stock/<%= p.id %>" method="POST"
+                style="display:flex;align-items:center;gap:0.4rem">
+            <input
+              type="number"
+              name="stock"
+              value="<%= p.stock %>"
+              min="0"
+              class="form-input"
+              style="width:70px;padding:0.3rem 0.5rem;font-size:0.88rem;text-align:center;
+                     color:<%= p.stock === 0 ? 'var(--rojo)' : p.stock < 10 ? 'var(--amarillo)' : 'var(--texto)' %>"
+            >
+            <button type="submit" class="btn btn-gris btn-xs" title="Guardar stock">✓</button>
+          </form>
+        </td>
+
+        <!-- Estado badge -->
+        <td>
+          <% if (p.stock === 0) { %>
+            <span class="badge badge-rojo">Agotado</span>
+          <% } else if (p.stock < 10) { %>
+            <span class="badge badge-amarillo">Stock bajo</span>
+          <% } else { %>
+            <span class="badge badge-verde">Disponible</span>
+          <% } %>
+        </td>
+
+        <!-- Acciones -->
         <td>
           <div style="display:flex;gap:0.4rem">
-            <a href="/tienda/producto/<%= p.id %>" target="_blank" class="btn btn-outline btn-xs">👁 Ver</a>
-            <a href="/admin/productos/editar/<%= p.id %>" class="btn btn-gris btn-xs">✏️ Editar</a>
-            <form action="/admin/productos/eliminar/<%= p.id %>" method="POST" data-confirm="¿Eliminar '<%= p.nombre %>'?">
-              <button type="submit" class="btn btn-peligro btn-xs">🗑</button>
+            <a href="/tienda/producto/<%= p.id %>" target="_blank"
+               class="btn btn-outline btn-xs" title="Ver en tienda">👁</a>
+            <a href="/admin/productos/editar/<%= p.id %>"
+               class="btn btn-gris btn-xs">✏️ Editar</a>
+            <form action="/admin/productos/eliminar/<%= p.id %>" method="POST"
+                  class="form-eliminar">
+              <button type="submit" class="btn btn-peligro btn-xs"
+                      data-nombre="<%= p.nombre %>">🗑</button>
             </form>
           </div>
         </td>
@@ -35,9 +136,77 @@
       <% }) %>
     </tbody>
   </table>
+
+  <!-- Mensaje cuando no hay resultados en el filtro -->
+  <div id="sin-resultados" style="display:none;padding:2rem;color:var(--texto-s);text-align:center;font-family:var(--font-c)">
+    No hay productos que coincidan con la búsqueda.
+  </div>
+
   <% } else { %>
-  <div style="padding:2rem;color:var(--texto-s)">No hay productos. <a href="/admin/productos/nuevo" style="color:var(--rojo)">Crea el primero →</a></div>
+  <div style="padding:2rem;color:var(--texto-s)">
+    No hay productos.
+    <a href="/admin/productos/nuevo" style="color:var(--rojo)">Crea el primero →</a>
+  </div>
   <% } %>
 </div>
+
+<script>
+(function () {
+  const tabla  = document.getElementById('tabla-productos');
+  if (!tabla) return;
+
+  const filas      = Array.from(tabla.querySelectorAll('tbody tr'));
+  const buscador   = document.getElementById('buscador');
+  const botonesCat = document.querySelectorAll('.filtro-cat');
+  const sinRes     = document.getElementById('sin-resultados');
+
+  let catActiva = '';
+
+  // ── Filtrar ──────────────────────────────────────────────────────────────
+  function filtrar() {
+    const q = buscador.value.toLowerCase().trim();
+    let visibles = 0;
+
+    filas.forEach(tr => {
+      const nombre = tr.dataset.nombre || '';
+      const cat    = tr.dataset.cat    || '';
+      const matchQ   = !q || nombre.includes(q);
+      const matchCat = !catActiva || cat === catActiva;
+      const visible  = matchQ && matchCat;
+      tr.style.display = visible ? '' : 'none';
+      if (visible) visibles++;
+    });
+
+    sinRes.style.display = visibles === 0 ? 'block' : 'none';
+  }
+
+  buscador.addEventListener('input', filtrar);
+
+  botonesCat.forEach(btn => {
+    btn.addEventListener('click', () => {
+      catActiva = btn.dataset.cat;
+      botonesCat.forEach(b => b.classList.remove('activo-cat'));
+      btn.classList.add('activo-cat');
+      filtrar();
+    });
+  });
+
+  // ── Confirmación al eliminar ─────────────────────────────────────────────
+  document.querySelectorAll('.form-eliminar').forEach(form => {
+    form.addEventListener('submit', e => {
+      const nombre = form.querySelector('button').dataset.nombre;
+      if (!confirm('¿Eliminar "' + nombre + '"? Esta acción no se puede deshacer.')) {
+        e.preventDefault();
+      }
+    });
+  });
+})();
+</script>
+
+<style>
+  .filtro-cat { background: var(--gris-3); color: var(--texto-s); border: 1px solid transparent; }
+  .filtro-cat:hover { background: var(--gris-4); color: var(--texto); }
+  .filtro-cat.activo-cat { background: var(--rojo); color: #fff; }
+</style>
 
 <%- include('layout-bottom') %>

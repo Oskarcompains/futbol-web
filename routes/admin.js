@@ -39,7 +39,7 @@ router.get('/', requireAuth, (req, res) => {
     productos: db.prepare('SELECT COUNT(*) as c FROM productos').get().c,
     patrocinadores: db.prepare('SELECT COUNT(*) as c FROM patrocinadores').get().c,
     mensajes: db.prepare('SELECT COUNT(*) as c FROM mensajes WHERE leido = 0').get().c,
-    pedidos: db.prepare('SELECT COUNT(*) as c FROM pedidos WHERE estado = "pendiente"').get().c,
+    pedidos: db.prepare("SELECT COUNT(*) as c FROM pedidos WHERE estado = 'pendiente'").get().c,
   };
   const mensajes_recientes = db.prepare('SELECT * FROM mensajes ORDER BY fecha DESC LIMIT 5').all();
   const pedidos_recientes = db.prepare(`
@@ -130,7 +130,13 @@ router.post('/jugadores/eliminar/:id', requireAuth, (req, res) => {
 
 router.get('/productos', requireAuth, (req, res) => {
   const productos = db.prepare('SELECT * FROM productos ORDER BY categoria, nombre').all();
-  res.render('admin/productos', { productos, admin: req.session.adminUser });
+  const stats = {
+    total: productos.length,
+    agotados: productos.filter(p => p.stock === 0).length,
+    bajo_stock: productos.filter(p => p.stock > 0 && p.stock < 10).length,
+    valor_inventario: productos.reduce((acc, p) => acc + p.precio * p.stock, 0),
+  };
+  res.render('admin/productos', { productos, stats, admin: req.session.adminUser });
 });
 
 router.get('/productos/nuevo', requireAuth, (req, res) => {
@@ -156,6 +162,12 @@ router.post('/productos/editar/:id', requireAuth, (req, res) => {
   db.prepare('UPDATE productos SET nombre=?, descripcion=?, precio=?, categoria=?, stock=? WHERE id=?').run(
     nombre, descripcion, parseFloat(precio), categoria, parseInt(stock)||0, req.params.id
   );
+  res.redirect('/admin/productos');
+});
+
+router.post('/productos/stock/:id', requireAuth, (req, res) => {
+  const nuevo = Math.max(0, parseInt(req.body.stock) || 0);
+  db.prepare('UPDATE productos SET stock = ? WHERE id = ?').run(nuevo, req.params.id);
   res.redirect('/admin/productos');
 });
 

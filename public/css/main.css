@@ -753,6 +753,111 @@ ul { list-style: none; }
   margin: 1rem 0;
 }
 
+/* ── GALERÍA VIROLA ───────────────────────────────────────────────────────── */
+.virolo-section { background: var(--negro-suave); }
+
+.virolo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+}
+.virolo-viewport {
+  flex: 1;
+  overflow: hidden;
+}
+.virolo-track {
+  display: flex;
+  gap: 1px;
+  background: var(--gris-oscuro);
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+.virolo-card {
+  flex: 0 0 calc(25% - 1px);
+  background: var(--negro-suave);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem 1.25rem;
+  text-align: center;
+  transition: background 0.2s;
+}
+.virolo-card:hover { background: #1a1a1a; }
+
+.virolo-svg {
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+.virolo-nombre {
+  font-family: var(--font-titulo);
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  margin-top: 1rem;
+  color: var(--blanco);
+}
+.virolo-apodo {
+  font-family: var(--font-condensed);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--rojo);
+  margin: 0.2rem 0 0.6rem;
+}
+.virolo-desc {
+  font-size: 0.82rem;
+  color: var(--gris-claro);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.virolo-nav {
+  background: var(--gris-oscuro);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--blanco);
+  font-size: 2rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  line-height: 1;
+  padding-bottom: 2px;
+}
+.virolo-nav:hover { background: var(--rojo); border-color: var(--rojo); }
+.virolo-nav:disabled { opacity: 0.2; cursor: default; pointer-events: none; }
+
+.virolo-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+.virolo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gris-medio);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  border: none;
+}
+.virolo-dot.activo { background: var(--rojo); transform: scale(1.25); }
+
+@media (max-width: 900px) {
+  .virolo-card { flex: 0 0 calc(50% - 1px); }
+}
+@media (max-width: 540px) {
+  .virolo-card { flex: 0 0 calc(100% - 1px); }
+}
+
 /* ── 404 ──────────────────────────────────────────────────────────────────── */
 .not-found {
   min-height: 100vh;
